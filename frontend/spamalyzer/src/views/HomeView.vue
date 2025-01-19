@@ -182,7 +182,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* Animacja tła */
+
 @keyframes gradient-animation {
   0% {
     background-position: 0% 50%;
@@ -236,7 +236,6 @@ main {
   }
 }
 
-/* Animacje fade i slide */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.5s;
@@ -259,7 +258,7 @@ main {
   opacity: 0;
 }
 
-/* Sekcja instrukcji */
+
 .instructions-section {
   display: flex;
   flex-direction: column;
