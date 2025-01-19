@@ -5,12 +5,10 @@ import sys
 import pickle
 import nltk
 from flask import Flask, request, jsonify
-
 nltk.download('wordnet', quiet=True)
 nltk.download('stopwords', quiet=True)
 
 app = Flask(__name__)
-
 MODEL = None
 
 def preprocess_text(text):
@@ -58,5 +56,4 @@ if __name__ == '__main__':
         MODEL = pickle.load(f)
         print("Model loaded!")
 
-    # Uruchamiamy serwer Flask na porcie 8000 (przykładowo)
     app.run(host='127.0.0.1', port=9243, debug=True)
