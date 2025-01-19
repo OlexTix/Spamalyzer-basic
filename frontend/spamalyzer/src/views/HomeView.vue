@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue";
+import axios from "axios";
 import Button from "primevue/button";
 import Textarea from "primevue/textarea";
 import lottie from "lottie-web"; // Import Lottie library
@@ -8,17 +9,17 @@ const email = ref("");
 const classificationResult = ref(null);
 const isLoading = ref(false);
 
-// Kontenery dla dwóch różnych animacji
-const headerAnimationContainer = ref(null); // Animacja nagłówka
-const processingAnimationContainer = ref(null); // Animacja przetwarzania
+
+const headerAnimationContainer = ref(null);
+const processingAnimationContainer = ref(null); 
 
 // Import Lottie animation JSON files
 import envelopeAnimation from "@/assets/animations/mail.json";
 import mailProcessingAnimation from "@/assets/animations/mail2.json";
 
-let processingAnimationInstance = null; // Zmienna dla instancji animacji przetwarzania
+let processingAnimationInstance = null; 
 
-const classifyEmail = () => {
+const classifyEmail = async () => {
   if (!email.value.trim()) {
     classificationResult.value = "Please enter a valid email text.";
     return;
@@ -31,15 +32,27 @@ const classifyEmail = () => {
     processingAnimationInstance.play();
   }
 
-  setTimeout(() => {
-    classificationResult.value =
-      Math.random() > 0.5 ? "This email is SPAM." : "This email is NOT SPAM.";
+  try {
+    const response = await axios.post("http://nlpfastify.lhmngr.pl/classify", {
+      emailText: email.value,
+    });
+
+   
+    if (response.status === 204) {
+      classificationResult.value = "This email is NOT SPAM.";
+    } else if (response.status === 200) {
+      classificationResult.value = "This email has been classified as SPAM"; // It's SPAM
+    } 
+  } catch (error) {
+    classificationResult.value = "Error: Unable to classify the email.";
+    console.error("API error:", error);
+  } finally {
     isLoading.value = false;
 
     if (processingAnimationInstance) {
       processingAnimationInstance.stop();
     }
-  }, 2000);
+  }
 };
 
 const resetClassifier = () => {
@@ -49,7 +62,7 @@ const resetClassifier = () => {
 
 // Initialize Lottie animations
 onMounted(() => {
-  // Animacja nagłówka
+
   lottie.loadAnimation({
     container: headerAnimationContainer.value,
     renderer: "svg",
@@ -58,12 +71,12 @@ onMounted(() => {
     animationData: envelopeAnimation,
   });
 
-  // Preload animacji przetwarzania
+ 
   processingAnimationInstance = lottie.loadAnimation({
     container: processingAnimationContainer.value,
     renderer: "svg",
     loop: true,
-    autoplay: false, // Animacja nie zaczyna się automatycznie
+    autoplay: false,
     animationData: mailProcessingAnimation,
   });
 });
@@ -95,9 +108,7 @@ onMounted(() => {
           label="Classify Email"
           class="w-full p-button-rounded p-button-lg p-button-primary hover:shadow-lg transition duration-300"
           style="text-decoration: none;"
-          @click="() => { 
-            classifyEmail(); 
-          }"
+          @click="classifyEmail"
         />
       </div>
 
@@ -116,8 +127,8 @@ onMounted(() => {
           <p
             class="text-2xl font-bold"
             :class="{
-              'text-red-500 animate-pulse': classificationResult.includes('SPAM'),
-              'text-green-500': !classificationResult.includes('SPAM'),
+              'text-red-500 animate-pulse': classificationResult.includes('Spam'),
+              'text-green-500': !classificationResult.includes('Spam'),
             }"
           >
             {{ classificationResult }}
@@ -135,7 +146,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* Efekt shine dla SPAMalyzer */
 .spamalyzer-title {
   position: relative;
   background: linear-gradient(
@@ -150,7 +160,6 @@ onMounted(() => {
   animation: shine 2s linear infinite;
 }
 
-/* Kluczowe ramki dla efektu shine */
 @keyframes shine {
   0% {
     background-position: 200% center;
@@ -160,7 +169,6 @@ onMounted(() => {
   }
 }
 
-/* Animacje dla sekcji */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.5s;
@@ -168,25 +176,6 @@ onMounted(() => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
-}
-
-a:hover {
-  background-color: transparent;
-}
-
-img.animate-bounce,
-svg.animate-bounce {
-  animation: bounce 2s infinite;
-}
-
-@keyframes bounce {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
 }
 
 [v-show="false"] {
