@@ -8,9 +8,11 @@ import lottie from "lottie-web"; // Import Lottie library
 const email = ref("");
 const classificationResult = ref(null);
 const isLoading = ref(false);
+const showInstructions = ref(true); // Show instructions initially
 
 const headerAnimationContainer = ref(null);
 const processingAnimationContainer = ref(null);
+const isSpam = ref(false);
 
 // Import Lottie animation JSON files
 import envelopeAnimation from "@/assets/animations/mail.json";
@@ -26,6 +28,7 @@ const classifyEmail = async () => {
 
   classificationResult.value = null;
   isLoading.value = true;
+  showInstructions.value = false; // Hide instructions when processing starts
 
   if (processingAnimationInstance) {
     processingAnimationInstance.play();
@@ -38,8 +41,10 @@ const classifyEmail = async () => {
 
     if (response.status === 204) {
       classificationResult.value = "This email is NOT SPAM.";
+      isSpam.value = false;
     } else if (response.status === 200) {
       classificationResult.value = "This email has been classified as SPAM.";
+      isSpam.value = true;
     }
   } catch (error) {
     classificationResult.value = "Error: Unable to classify the email.";
@@ -56,6 +61,12 @@ const classifyEmail = async () => {
 const resetClassifier = () => {
   email.value = "";
   classificationResult.value = null;
+  showInstructions.value = true; // Show instructions again
+};
+
+const confirmSpam = () => {
+  console.log("Confirmed as SPAM: ", email.value);
+  resetClassifier();
 };
 
 // Initialize Lottie animations
@@ -102,8 +113,7 @@ onMounted(() => {
         />
         <Button
           label="Classify Email"
-          class="w-full p-button-rounded p-button-lg p-button-primary hover:shadow-lg transition duration-300 text-lg"
-          style="text-decoration: none;"
+          class="btn-primary w-full text-lg"
           @click="classifyEmail"
         />
       </div>
@@ -123,25 +133,61 @@ onMounted(() => {
           <p
             class="text-2xl font-bold"
             :class="{
-              'text-red-500 animate-pulse': classificationResult.includes('Spam'),
-              'text-green-500': !classificationResult.includes('Spam'),
+              'text-red-500 animate-pulse': isSpam,
+              'text-green-500': !isSpam,
             }"
           >
             {{ classificationResult }}
           </p>
-          <Button
-            label="Classify Another Email"
-            class="w-full p-button-rounded p-button-lg p-button-primary hover:shadow-lg transition duration-300"
-            style="text-decoration: none; margin-top: 20px;"
-            @click="resetClassifier"
-          />
+          <div v-if="isSpam" class="mt-6">
+            <Button
+              label="Confirm SPAM"
+              class="p-button-rounded p-button-danger w-40 mr-4"
+              @click="confirmSpam"
+            />
+            <Button
+              label="Not SPAM"
+              class="p-button-rounded p-button-success w-40"
+              @click="resetClassifier"
+            />
+          </div>
+          <div v-else>
+            <Button
+              label="Classify Another Email"
+              class="btn-primary w-full mt-4"
+              @click="resetClassifier"
+            />
+          </div>
         </div>
       </Transition>
     </div>
+
+    <!-- Instructions Section -->
+    <Transition name="slide-down">
+      <div
+        id="instructions"
+        v-show="showInstructions"
+        class="instructions-section"
+      >
+        <h2 class="text-2xl font-bold text-indigo-700 mb-4 text-center">Instructions</h2>
+        <ul class="list-disc pl-6 text-gray-700 text-lg">
+          <li>Only emails in English are supported for classification.</li>
+          <li>Provide full email content, including subject and body.</li>
+          <li>The email text should not include sensitive personal information.</li>
+          <li>Ensure the email text is clear and free from unnecessary formatting.</li>
+        </ul>
+      </div>
+    </Transition>
   </main>
 </template>
 
 <style scoped>
+
+.btn-primary:hover {
+  transform: scale(1.02);
+}
+
+
 .spamalyzer-title {
   position: relative;
   background: linear-gradient(
@@ -153,7 +199,7 @@ onMounted(() => {
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: shine 4s linear infinite; /* Reduced frequency of shine */
+  animation: shine 4s linear infinite;
 }
 
 @keyframes shine {
@@ -165,12 +211,40 @@ onMounted(() => {
   }
 }
 
+
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.5s;
 }
 .fade-enter-from,
 .fade-leave-to {
+  opacity: 0;
+}
+
+
+.instructions-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 10px 15px rgba(0, 0, 0, 0.2);
+}
+
+
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.3s ease;
+}
+.slide-down-enter-from {
+  transform: translateY(-20px);
+  opacity: 0;
+}
+.slide-down-leave-to {
+  transform: translateY(-20px);
   opacity: 0;
 }
 
