@@ -1,7 +1,6 @@
 'use strict';
 
 const dotenv = require('dotenv');
-
 dotenv.config();
 
 module.exports = async function (fastify, opts) {
@@ -12,8 +11,7 @@ module.exports = async function (fastify, opts) {
       return reply.code(400).send({ error: 'emailText is required' });
     }
 
-    const pythonServiceUrl = process.env.PYTHON_SERVICE_URL; 
-
+    const pythonServiceUrl = process.env.PYTHON_SERVICE_URL;
     console.log('[INFO] Using Python service URL:', pythonServiceUrl);
 
     try {
@@ -24,6 +22,7 @@ module.exports = async function (fastify, opts) {
       });
 
       if (!resp.ok) {
+        // Błąd HTTP od mikrousługi
         const errBody = await resp.text();
         console.error('[Python Service Error]', resp.status, errBody);
         return reply.code(resp.status).send({
@@ -33,9 +32,14 @@ module.exports = async function (fastify, opts) {
       }
 
       const data = await resp.json();
-      return reply.send({
-        message: `Wynik klasyfikacji: ${data.prediction}`
-      });
+
+      if (data.prediction === 'Spam') {
+        // Spam HTTP 200
+        return reply.code(200).send();
+      } else {
+        // Brak spamu HTTP 204 (No Content)
+        return reply.code(204).send();
+      }
 
     } catch (err) {
       console.error('[HTTP Error]', err.message);
