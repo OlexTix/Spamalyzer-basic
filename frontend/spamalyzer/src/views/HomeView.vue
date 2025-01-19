@@ -9,15 +9,14 @@ const email = ref("");
 const classificationResult = ref(null);
 const isLoading = ref(false);
 
-
 const headerAnimationContainer = ref(null);
-const processingAnimationContainer = ref(null); 
+const processingAnimationContainer = ref(null);
 
 // Import Lottie animation JSON files
 import envelopeAnimation from "@/assets/animations/mail.json";
 import mailProcessingAnimation from "@/assets/animations/mail2.json";
 
-let processingAnimationInstance = null; 
+let processingAnimationInstance = null;
 
 const classifyEmail = async () => {
   if (!email.value.trim()) {
@@ -33,16 +32,15 @@ const classifyEmail = async () => {
   }
 
   try {
-    const response = await axios.post("http://nlpfastify.lhmngr.pl/classify", {
+    const response = await axios.post("https://nlpfastify.lhmngr.pl/classify", {
       emailText: email.value,
     });
 
-   
     if (response.status === 204) {
       classificationResult.value = "This email is NOT SPAM.";
     } else if (response.status === 200) {
-      classificationResult.value = "This email has been classified as SPAM"; // It's SPAM
-    } 
+      classificationResult.value = "This email has been classified as SPAM.";
+    }
   } catch (error) {
     classificationResult.value = "Error: Unable to classify the email.";
     console.error("API error:", error);
@@ -62,7 +60,6 @@ const resetClassifier = () => {
 
 // Initialize Lottie animations
 onMounted(() => {
-
   lottie.loadAnimation({
     container: headerAnimationContainer.value,
     renderer: "svg",
@@ -71,7 +68,6 @@ onMounted(() => {
     animationData: envelopeAnimation,
   });
 
- 
   processingAnimationInstance = lottie.loadAnimation({
     container: processingAnimationContainer.value,
     renderer: "svg",
@@ -95,18 +91,18 @@ onMounted(() => {
     <div class="w-full max-w-4xl bg-white shadow-xl rounded-lg p-6 md:p-10">
       <!-- Input Section -->
       <div v-if="!classificationResult && !isLoading">
-        <p class="text-gray-600 mb-6 text-center">
+        <p class="text-gray-600 text-lg font-semibold mb-6 text-center">
           Enter an email text below to classify whether it is SPAM or not.
         </p>
         <Textarea
           v-model="email"
           rows="8"
           placeholder="Enter email text here..."
-          class="w-full p-4 text-lg border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 mb-6"
+          class="w-full p-4 text-xl border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 mb-6"
         />
         <Button
           label="Classify Email"
-          class="w-full p-button-rounded p-button-lg p-button-primary hover:shadow-lg transition duration-300"
+          class="w-full p-button-rounded p-button-lg p-button-primary hover:shadow-lg transition duration-300 text-lg"
           style="text-decoration: none;"
           @click="classifyEmail"
         />
@@ -115,7 +111,7 @@ onMounted(() => {
       <!-- Loading Section -->
       <div v-show="isLoading" class="flex items-center justify-center flex-col">
         <div ref="processingAnimationContainer" class="w-48 h-48"></div>
-        <p class="text-gray-600 mt-4">Processing your email...</p>
+        <p class="text-gray-600 text-lg mt-4">Processing your email...</p>
       </div>
 
       <!-- Result Section -->
@@ -157,7 +153,7 @@ onMounted(() => {
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: shine 2s linear infinite;
+  animation: shine 4s linear infinite; /* Reduced frequency of shine */
 }
 
 @keyframes shine {
