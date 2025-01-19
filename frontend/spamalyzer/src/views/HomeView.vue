@@ -182,12 +182,37 @@ onMounted(() => {
 </template>
 
 <style scoped>
-
-.btn-primary:hover {
-  transform: scale(1.02);
+/* Animacja tła */
+@keyframes gradient-animation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
 
+main {
+  background: linear-gradient(-45deg, #4f46e5, #6366f1, #2563eb, #1d4ed8);
+  background-size: 400% 400%;
+  animation: gradient-animation 15s ease infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+/* Spamalyzer Title */
 .spamalyzer-title {
   position: relative;
   background: linear-gradient(
@@ -211,7 +236,7 @@ onMounted(() => {
   }
 }
 
-
+/* Animacje fade i slide */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.5s;
@@ -220,20 +245,6 @@ onMounted(() => {
 .fade-leave-to {
   opacity: 0;
 }
-
-
-.instructions-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin-top: 20px;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0px 10px 15px rgba(0, 0, 0, 0.2);
-}
-
 
 .slide-down-enter-active,
 .slide-down-leave-active {
@@ -248,7 +259,25 @@ onMounted(() => {
   opacity: 0;
 }
 
+/* Sekcja instrukcji */
+.instructions-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 10px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary:hover {
+  transform: scale(1.02);
+}
+
 [v-show="false"] {
   display: none;
 }
 </style>
+
