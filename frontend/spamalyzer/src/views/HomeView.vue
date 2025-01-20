@@ -182,12 +182,14 @@ main {
   background: linear-gradient(
     to right,
     rgba(255, 255, 255, 0.5),
-    rgba(255, 255, 255, 0.9)
+    rgba(255, 255, 255, 0.9),
+    rgba(255, 255, 255, 0.5)
   );
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: shine 3s linear infinite;
+  -webkit-background-clip: text; /* Obsługa WebKit */
+  background-clip: text; /* Standard */
+  -webkit-text-fill-color: transparent; /* Obsługa WebKit */
+  background-size: 200% auto; /* Ważne dla przesuwania gradientu */
+  animation: shine 3s linear infinite; /* Animacja */
   text-align: center;
   margin-bottom: 2rem;
 }
@@ -200,6 +202,7 @@ main {
     background-position: -200% center;
   }
 }
+
 
 /* Card styling */
 .max-w-4xl {
