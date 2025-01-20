@@ -40,6 +40,7 @@ build/Release
 
 # Dependency directories
 node_modules/
+.vscode/
 jspm_packages/
 
 # Virtual python environment
@@ -47,6 +48,7 @@ venv
 
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
+
 
 # TypeScript cache
 *.tsbuildinfo
