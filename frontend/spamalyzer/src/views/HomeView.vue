@@ -1,115 +1,26 @@
-<script setup>
-import { ref, onMounted } from "vue";
-import axios from "axios";
-import Button from "primevue/button";
-import Textarea from "primevue/textarea";
-import lottie from "lottie-web"; // Import Lottie library
-
-const email = ref("");
-const classificationResult = ref(null);
-const isLoading = ref(false);
-const showInstructions = ref(true); // Show instructions initially
-
-const headerAnimationContainer = ref(null);
-const processingAnimationContainer = ref(null);
-const isSpam = ref(false);
-
-// Import Lottie animation JSON files
-import envelopeAnimation from "@/assets/animations/mail.json";
-import mailProcessingAnimation from "@/assets/animations/mail2.json";
-
-let processingAnimationInstance = null;
-
-const classifyEmail = async () => {
-  if (!email.value.trim()) {
-    classificationResult.value = "Please enter a valid email text.";
-    return;
-  }
-
-  classificationResult.value = null;
-  isLoading.value = true;
-  showInstructions.value = false; // Hide instructions when processing starts
-
-  if (processingAnimationInstance) {
-    processingAnimationInstance.play();
-  }
-
-  try {
-    const response = await axios.post("https://nlpfastify.lhmngr.pl/classify", {
-      emailText: email.value,
-    });
-
-    if (response.status === 204) {
-      classificationResult.value = "This email is NOT SPAM.";
-      isSpam.value = false;
-    } else if (response.status === 200) {
-      classificationResult.value = "This email has been classified as SPAM.";
-      isSpam.value = true;
-    }
-  } catch (error) {
-    classificationResult.value = "Error: Unable to classify the email.";
-    console.error("API error:", error);
-  } finally {
-    isLoading.value = false;
-
-    if (processingAnimationInstance) {
-      processingAnimationInstance.stop();
-    }
-  }
-};
-
-const resetClassifier = () => {
-  email.value = "";
-  classificationResult.value = null;
-  showInstructions.value = true; // Show instructions again
-};
-
-const confirmSpam = () => {
-  console.log("Confirmed as SPAM: ", email.value);
-  resetClassifier();
-};
-
-// Initialize Lottie animations
-onMounted(() => {
-  lottie.loadAnimation({
-    container: headerAnimationContainer.value,
-    renderer: "svg",
-    loop: true,
-    autoplay: true,
-    animationData: envelopeAnimation,
-  });
-
-  processingAnimationInstance = lottie.loadAnimation({
-    container: processingAnimationContainer.value,
-    renderer: "svg",
-    loop: true,
-    autoplay: false,
-    animationData: mailProcessingAnimation,
-  });
-});
-</script>
-
 <template>
-  <main class="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-indigo-500 to-blue-600 w-full p-4">
+  <main
+    class="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 w-full"
+  >
     <!-- Header Section -->
     <div ref="headerAnimationContainer" class="w-32 h-32 mb-6"></div>
 
-    <h1 class="text-5xl font-extrabold text-white mb-8 spamalyzer-title">
-      SPAMalyzer
-    </h1>
+    <h1 class="spamalyzer-title">SPAMalyzer</h1>
 
     <!-- Main Card -->
-    <div class="w-full max-w-4xl bg-white shadow-xl rounded-lg p-6 md:p-10">
+    <div
+      class="max-w-4xl w-full bg-white/10 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-10 border border-white/20"
+    >
       <!-- Input Section -->
       <div v-if="!classificationResult && !isLoading">
-        <p class="text-gray-600 text-lg font-semibold mb-6 text-center">
+        <p class="text-gray-200 text-lg font-semibold mb-6 text-center">
           Enter an email text below to classify whether it is SPAM or not.
         </p>
         <Textarea
           v-model="email"
           rows="8"
           placeholder="Enter email text here..."
-          class="w-full p-4 text-xl border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 mb-6"
+          class="textarea w-full"
         />
         <Button
           label="Classify Email"
@@ -121,33 +32,24 @@ onMounted(() => {
       <!-- Loading Section -->
       <div v-show="isLoading" class="flex items-center justify-center flex-col">
         <div ref="processingAnimationContainer" class="w-48 h-48"></div>
-        <p class="text-gray-600 text-lg mt-4">Processing your email...</p>
+        <p class="text-gray-200 text-lg mt-4">Processing your email...</p>
       </div>
 
       <!-- Result Section -->
       <Transition name="fade">
-        <div
-          v-if="classificationResult && !isLoading"
-          class="text-center mt-6"
-        >
-          <p
-            class="text-2xl font-bold"
-            :class="{
-              'text-red-500 animate-pulse': isSpam,
-              'text-green-500': !isSpam,
-            }"
-          >
+        <div v-if="classificationResult && !isLoading" class="text-center mt-6">
+          <p class="result-text">
             {{ classificationResult }}
           </p>
-          <div v-if="isSpam" class="mt-6">
+          <div v-if="isSpam" class="flex gap-4 justify-center mt-6">
             <Button
               label="Confirm SPAM"
-              class="p-button-rounded p-button-danger w-40 mr-4"
+              class="btn-danger"
               @click="confirmSpam"
             />
             <Button
               label="Not SPAM"
-              class="p-button-rounded p-button-success w-40"
+              class="btn-success"
               @click="resetClassifier"
             />
           </div>
@@ -161,27 +63,105 @@ onMounted(() => {
         </div>
       </Transition>
     </div>
-
-    <!-- Instructions Section -->
-    <Transition name="slide-down">
-      <div
-        id="instructions"
-        v-show="showInstructions"
-        class="instructions-section"
-      >
-        <h2 class="text-2xl font-bold text-indigo-700 mb-4 text-center">Instructions</h2>
-        <ul class="list-disc pl-6 text-gray-700 text-lg">
-          <li>Only emails in English are supported for classification.</li>
-          <li>Provide full email content, including subject and body.</li>
-          <li>The email text should not include sensitive personal information.</li>
-          <li>Ensure the email text is clear and free from unnecessary formatting.</li>
-        </ul>
-      </div>
-    </Transition>
   </main>
 </template>
 
+<script setup>
+import { ref, onMounted } from "vue";
+import axios from "axios";
+import Button from "primevue/button";
+import Textarea from "primevue/textarea";
+import lottie from "lottie-web";
+
+const email = ref("");
+const classificationResult = ref(null);
+const isLoading = ref(false);
+const isSpam = ref(false);
+
+const headerAnimationContainer = ref(null);
+const processingAnimationContainer = ref(null);
+
+import envelopeAnimation from "@/assets/animations/mail.json";
+import mailProcessingAnimation from "@/assets/animations/mail2.json";
+
+const classifyEmail = async () => {
+  if (!email.value.trim()) {
+    classificationResult.value = "Please enter a valid email text.";
+    return;
+  }
+
+  classificationResult.value = null;
+  isLoading.value = true;
+
+  try {
+    const { status } = await axios.post(
+      "https://nlpfastify.lhmngr.pl/classify",
+      {
+        emailText: email.value,
+      }
+    );
+
+    const statusMessages = {
+      204: { message: "This email is NOT SPAM.", spam: false },
+      200: { message: "This email has been classified as SPAM.", spam: true },
+    };
+
+    const result = statusMessages[status] || {
+      message: "Error: Unable to classify the email.",
+      spam: false,
+    };
+
+    classificationResult.value = result.message;
+    isSpam.value = result.spam;
+  } catch (error) {
+    classificationResult.value = "Error: Unable to classify the email.";
+    console.error("API error:", error);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const resetClassifier = () => {
+  email.value = "";
+  classificationResult.value = null;
+};
+
+const confirmSpam = () => {
+  console.log("Confirmed as SPAM:", email.value);
+  resetClassifier();
+};
+
+const loadLottieAnimation = (
+  container,
+  animationData,
+  autoplay = true,
+  loop = true
+) => {
+  return lottie.loadAnimation({
+    container,
+    renderer: "svg",
+    loop,
+    autoplay,
+    animationData,
+  });
+};
+
+onMounted(() => {
+  loadLottieAnimation(headerAnimationContainer.value, envelopeAnimation);
+  loadLottieAnimation(
+    processingAnimationContainer.value,
+    mailProcessingAnimation,
+    false
+  );
+});
+</script>
+
 <style scoped>
+/* Background gradient animation */
+main {
+  background-size: 400% 400%;
+  animation: gradient-animation 15s ease infinite;
+}
 
 @keyframes gradient-animation {
   0% {
@@ -195,36 +175,21 @@ onMounted(() => {
   }
 }
 
-body {
-  margin: 0;
-  padding: 0;
-  font-family: Arial, sans-serif;
-}
-
-main {
-  background: linear-gradient(-45deg, #4f46e5, #6366f1, #2563eb, #1d4ed8);
-  background-size: 400% 400%;
-  animation: gradient-animation 15s ease infinite;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  flex-direction: column;
-}
-
-/* Spamalyzer Title */
+/* Title shine effect */
 .spamalyzer-title {
-  position: relative;
+  font-size: 3rem;
+  font-weight: 800;
   background: linear-gradient(
     to right,
-    rgba(255, 255, 255, 0.5) 0%,
-    rgba(255, 255, 255, 0.9) 50%,
-    rgba(255, 255, 255, 0.5) 100%
+    rgba(255, 255, 255, 0.5),
+    rgba(255, 255, 255, 0.9)
   );
-  background-size: 200% auto;
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: shine 4s linear infinite;
+  animation: shine 3s linear infinite;
+  text-align: center;
+  margin-bottom: 2rem;
 }
 
 @keyframes shine {
@@ -236,47 +201,91 @@ main {
   }
 }
 
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
+/* Card styling */
+.max-w-4xl {
+  max-width: 900px;
+  padding: 2rem;
+  margin: 0 auto;
 }
 
-.slide-down-enter-active,
-.slide-down-leave-active {
-  transition: all 0.3s ease;
-}
-.slide-down-enter-from {
-  transform: translateY(-20px);
-  opacity: 0;
-}
-.slide-down-leave-to {
-  transform: translateY(-20px);
-  opacity: 0;
-}
-
-
-.instructions-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin-top: 20px;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0px 10px 15px rgba(0, 0, 0, 0.2);
+/* Input styles */
+.textarea {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.1rem;
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  transition: box-shadow 0.3s, border-color 0.3s;
+  margin-bottom: 1.5rem;
 }
 
+.textarea::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+}
+
+.textarea:focus {
+  box-shadow: 0 0 10px rgba(255, 105, 180, 0.6);
+  border-color: rgba(255, 105, 180, 0.8);
+}
+
+/* Button styles */
+.btn-primary {
+  background: linear-gradient(to right, #ff6bcb, #ff2994);
+  border: none;
+  color: white; /* Tekst domyślnie biały */
+  font-weight: bold;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease,
+    color 0.3s ease;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+}
+
+/* Pseudoelement gradientu */
+.btn-primary::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, #ff6bcb, #ff2994);
+  z-index: -1;
+  transition: background 0.3s ease;
+  border-radius: 8px;
+}
+
+/* Hover – zachowanie koloru tekstu */
 .btn-primary:hover {
-  transform: scale(1.02);
+  transform: scale(1.05);
+  background: linear-gradient(
+    to right,
+    #ff3ba7,
+    #ff007f
+  ); /* Gradient na hover */
+  box-shadow: 0px 10px 20px rgba(255, 0, 127, 0.6);
+  color: white !important; /* Wymuszenie koloru tekstu */
 }
 
-[v-show="false"] {
-  display: none;
+/* Hover dla pseudoelementu */
+.btn-primary:hover::before {
+  background: linear-gradient(to right, #ff7eb5, #ff5090);
+}
+
+/* Classification result text */
+.result-text {
+  font-size: 2rem;
+  font-weight: bold;
+  background: linear-gradient(to right, #ff6bcb, #ff2994);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0px 4px 6px rgba(255, 105, 180, 0.4);
 }
 </style>
-
